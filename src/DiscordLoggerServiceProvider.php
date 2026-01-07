@@ -31,21 +31,5 @@ class DiscordLoggerServiceProvider extends ServiceProvider
                 SendDailyLogReport::class,
             ]);
         }
-
-        $this->registerScheduledCommand();
-    }
-
-    protected function registerScheduledCommand(): void
-    {
-        $this->callAfterResolving(\Illuminate\Console\Scheduling\Schedule::class, function ($schedule) {
-            if (config('discord-logger.daily_report.enabled', false)) {
-                $time = config('discord-logger.daily_report.time', '08:00');
-                $timezone = config('discord-logger.daily_report.timezone', 'UTC');
-
-                $schedule->command('discord-logger:daily-report')
-                    ->dailyAt($time)
-                    ->timezone($timezone);
-            }
-        });
     }
 }

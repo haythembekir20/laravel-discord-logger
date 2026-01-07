@@ -110,7 +110,7 @@ Log::warning('This is just a warning');
 
 ### Daily Reports
 
-The daily report command is automatically scheduled if enabled in config. You can also run it manually:
+Run the daily report command manually:
 
 ```bash
 # Send yesterday's report
@@ -121,6 +121,31 @@ php artisan discord-logger:daily-report --date=2024-01-15
 
 # Preview without sending (dry run)
 php artisan discord-logger:daily-report --dry-run
+```
+
+#### Scheduling the Daily Report
+
+To automatically send daily reports, add this to your `routes/console.php` (Laravel 11+) or `app/Console/Kernel.php`:
+
+**Laravel 11+ (`routes/console.php`):**
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('discord-logger:daily-report')
+    ->dailyAt('08:00')
+    ->timezone('UTC');
+```
+
+**Laravel 10 (`app/Console/Kernel.php`):**
+
+```php
+protected function schedule(Schedule $schedule): void
+{
+    $schedule->command('discord-logger:daily-report')
+        ->dailyAt('08:00')
+        ->timezone('UTC');
+}
 ```
 
 Make sure your scheduler is running:
