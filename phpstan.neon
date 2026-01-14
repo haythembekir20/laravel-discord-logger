@@ -1,0 +1,12 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - src
+    level: 6
+    ignoreErrors:
+        # Ignore missing return types in some Laravel conventions
+    excludePaths:
+        - tests
+    checkMissingIterableValueType: false

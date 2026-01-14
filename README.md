@@ -1,20 +1,38 @@
 # Laravel Discord Logger
 
-A Laravel package for sending log notifications to Discord via webhooks. Supports real-time error alerts and daily log reports.
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/haythem-bekir/laravel-discord-logger.svg?style=flat-square)](https://packagist.org/packages/haythem-bekir/laravel-discord-logger)
+[![Total Downloads](https://img.shields.io/packagist/dt/haythem-bekir/laravel-discord-logger.svg?style=flat-square)](https://packagist.org/packages/haythem-bekir/laravel-discord-logger)
+[![License](https://img.shields.io/packagist/l/haythem-bekir/laravel-discord-logger.svg?style=flat-square)](https://packagist.org/packages/haythem-bekir/laravel-discord-logger)
+
+A Laravel package that sends **daily log statistics reports** to Discord. Get comprehensive insights about your application's logs delivered to your Discord channel every day.
+
+## Why Daily Reports?
+
+Instead of alert fatigue from real-time notifications, this package provides:
+
+- 📊 **Comprehensive daily statistics** - Total logs, breakdown by level and channel
+- ⚠️ **Top recurring errors** - Identify patterns and prioritize fixes
+- 🎯 **Better signal-to-noise** - Review at your chosen time, not during incidents
+- 🚀 **Zero performance impact** - Runs as a scheduled task, not on every request
+- 📈 **Historical insights** - See trends and patterns over time
 
 ## Features
 
-- **Real-time Notifications**: Send log messages to Discord instantly as they happen
-- **Daily Reports**: Scheduled summary of log statistics with top recurring errors
-- **Async Support**: Queue-based notifications for zero performance impact
-- **Rate Limiting**: Prevent webhook flooding during error storms
-- **Customizable**: Configure log levels, colors, bot appearance, and more
-- **Environment Labels**: Identify which environment logs are coming from
+- ✅ Daily log statistics report sent to Discord
+- ✅ Breakdown by log level (emergency, alert, critical, error, warning, etc.)
+- ✅ Breakdown by channel
+- ✅ Top 5 recurring errors with count
+- ✅ Customizable bot appearance (username, avatar)
+- ✅ Environment labels (production, staging, etc.)
+- ✅ Manual or scheduled execution
+- ✅ Dry-run mode for previewing reports
+- ✅ Clean SOLID architecture
+- ✅ Fully testable
 
 ## Requirements
 
 - PHP 8.1+
-- Laravel 10.x or 11.x
+- Laravel 10.x, 11.x, or 12.x
 
 ## Installation
 
@@ -30,87 +48,59 @@ Publish the configuration file:
 php artisan vendor:publish --tag=discord-logger-config
 ```
 
-## Configuration
+## Quick Start
 
-### Environment Variables
+### 1. Get Your Discord Webhook URL
 
-Add these to your `.env` file:
+1. Go to your Discord server settings
+2. Navigate to **Integrations** → **Webhooks**
+3. Click **New Webhook**
+4. Choose the channel for reports
+5. Copy the webhook URL
+
+### 2. Configure Your Environment
+
+Add to your `.env` file:
 
 ```env
-# Real-time Notifications
-DISCORD_LOGGER_REALTIME_ENABLED=true
-DISCORD_LOGGER_REALTIME_WEBHOOK_URL=https://discord.com/api/webhooks/your-webhook-url
-DISCORD_LOGGER_REALTIME_ASYNC=true
-DISCORD_LOGGER_REALTIME_LEVELS=emergency,alert,critical,error
-
-# Rate Limiting
-DISCORD_LOGGER_RATE_LIMIT_ENABLED=true
-DISCORD_LOGGER_RATE_LIMIT_MAX=10
-
-# Daily Reports
 DISCORD_LOGGER_DAILY_REPORT_ENABLED=true
-DISCORD_LOGGER_DAILY_REPORT_WEBHOOK_URL=https://discord.com/api/webhooks/your-webhook-url
+DISCORD_LOGGER_DAILY_REPORT_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_WEBHOOK_URL
 DISCORD_LOGGER_DAILY_REPORT_TIME=08:00
 DISCORD_LOGGER_DAILY_REPORT_TIMEZONE=UTC
-
-# Appearance
-DISCORD_LOGGER_BOT_USERNAME="Laravel Logger"
-DISCORD_LOGGER_BOT_AVATAR_URL=
-
-# Environment Label
-DISCORD_LOGGER_ENVIRONMENT_LABEL=production
 ```
 
-### Setting Up the Log Channel
+### 3. Schedule the Daily Report
 
-Add the Discord channel to your `config/logging.php`:
+**Laravel 11+ (`routes/console.php`):**
 
 ```php
-'channels' => [
-    // ... other channels
+use Illuminate\Support\Facades\Schedule;
 
-    'discord' => [
-        'driver' => 'custom',
-        'via' => \HaythemBekir\DiscordLogger\Logging\CreateDiscordLogger::class,
-        'level' => 'error',
-    ],
-],
+Schedule::command('discord-logger:daily-report')->dailyAt('08:00');
 ```
 
-### Using with Stack Channel
-
-To send logs to both file and Discord:
+**Laravel 10 (`app/Console/Kernel.php`):**
 
 ```php
-'channels' => [
-    'stack' => [
-        'driver' => 'stack',
-        'channels' => ['daily', 'discord'],
-        'ignore_exceptions' => false,
-    ],
-
-    // ... other channels
-],
+protected function schedule(Schedule $schedule): void
+{
+    $schedule->command('discord-logger:daily-report')->dailyAt('08:00');
+}
 ```
+
+Make sure your scheduler is running:
+
+```bash
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+That's it! You'll receive daily reports at 8:00 AM (UTC).
 
 ## Usage
 
-### Real-time Notifications
+### Manual Execution
 
-Once configured, any log message at or above the configured level will be sent to Discord:
-
-```php
-// These will trigger Discord notifications (if level is 'error' or above)
-Log::error('Something went wrong!');
-Log::critical('Database connection failed', ['host' => 'localhost']);
-
-// This won't trigger (below error level by default)
-Log::warning('This is just a warning');
-```
-
-### Daily Reports
-
-Run the daily report command manually:
+Run reports manually anytime:
 
 ```bash
 # Send yesterday's report
@@ -123,88 +113,171 @@ php artisan discord-logger:daily-report --date=2024-01-15
 php artisan discord-logger:daily-report --dry-run
 ```
 
-#### Scheduling the Daily Report
+### Programmatic Usage
 
-To automatically send daily reports, add this to your `routes/console.php` (Laravel 11+) or `app/Console/Kernel.php`:
-
-**Laravel 11+ (`routes/console.php`):**
+Use the actions directly in your code:
 
 ```php
-use Illuminate\Support\Facades\Schedule;
+use HaythemBekir\DiscordLogger\Application\DailyReport\GatherLogStatisticsAction;
+use HaythemBekir\DiscordLogger\Application\DailyReport\BuildDailyReportAction;
+use HaythemBekir\DiscordLogger\Application\DailyReport\SendDailyReportAction;
+use Carbon\Carbon;
 
-Schedule::command('discord-logger:daily-report')
-    ->dailyAt('08:00')
-    ->timezone('UTC');
-```
-
-**Laravel 10 (`app/Console/Kernel.php`):**
-
-```php
-protected function schedule(Schedule $schedule): void
+class CustomReportService
 {
-    $schedule->command('discord-logger:daily-report')
-        ->dailyAt('08:00')
-        ->timezone('UTC');
+    public function __construct(
+        private GatherLogStatisticsAction $gather,
+        private BuildDailyReportAction $build,
+        private SendDailyReportAction $send,
+    ) {}
+
+    public function sendWeeklyDigest(): void
+    {
+        $dates = collect(range(0, 6))->map(fn($days) => Carbon::now()->subDays($days));
+
+        foreach ($dates as $date) {
+            $stats = $this->gather->execute($date);
+            $report = $this->build->execute($stats);
+            $this->send->execute($report);
+        }
+    }
 }
 ```
 
-Make sure your scheduler is running:
+## Configuration
 
-```bash
-* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
-```
-
-### Direct Service Usage
-
-You can also use the service directly:
+The package provides several customization options in `config/discord-logger.php`:
 
 ```php
-use HaythemBekir\DiscordLogger\Services\DiscordNotificationService;
-
-$discord = app(DiscordNotificationService::class);
-
-// Send a custom notification
-$discord->sendLogNotification('error', 'Custom error message', [
-    'user_id' => 123,
-    'action' => 'login_failed',
-]);
-
-// Send a custom report
-$discord->sendDailyReport([
-    'date' => '2024-01-15',
-    'total' => 150,
-    'by_level' => [
-        'error' => 10,
-        'warning' => 40,
-        'info' => 100,
+return [
+    'daily_report' => [
+        'enabled' => env('DISCORD_LOGGER_DAILY_REPORT_ENABLED', false),
+        'webhook_url' => env('DISCORD_LOGGER_DAILY_REPORT_WEBHOOK_URL'),
+        'time' => env('DISCORD_LOGGER_DAILY_REPORT_TIME', '08:00'),
+        'timezone' => env('DISCORD_LOGGER_DAILY_REPORT_TIMEZONE', 'UTC'),
     ],
-]);
+
+    'appearance' => [
+        'username' => env('DISCORD_LOGGER_BOT_USERNAME', 'Laravel Logger'),
+        'avatar_url' => env('DISCORD_LOGGER_BOT_AVATAR_URL'),
+    ],
+
+    'colors' => [
+        'emergency' => 0xFF0000, // Red
+        'alert'     => 0xFF3300, // Orange-Red
+        'critical'  => 0xFF6600, // Orange
+        'error'     => 0xFF9900, // Dark Orange
+        'warning'   => 0xFFCC00, // Yellow
+        'notice'    => 0x00CCFF, // Cyan
+        'info'      => 0x0099FF, // Blue
+        'debug'     => 0x999999, // Gray
+    ],
+
+    'environment_label' => env('DISCORD_LOGGER_ENVIRONMENT_LABEL', env('APP_ENV')),
+];
 ```
 
-## Discord Webhook Setup
+## What the Report Includes
 
-1. Go to your Discord server settings
-2. Navigate to **Integrations** > **Webhooks**
-3. Click **New Webhook**
-4. Choose the channel for notifications
-5. Copy the webhook URL
-6. Paste it in your `.env` file
+Each daily report contains:
 
-## Embed Colors
+- **📅 Date** - Which day the report covers
+- **📊 Total Logs** - Total number of log entries
+- **📈 Breakdown by Level** - Count for each level with emoji indicators:
+  - 🚨 Emergency
+  - 🔔 Alert
+  - 💥 Critical
+  - ❌ Error
+  - ⚠️ Warning
+  - 📝 Notice
+  - ℹ️ Info
+  - 🔍 Debug
+- **📁 Breakdown by Channel** - Count per logging channel
+- **⚠️ Top Recurring Errors** - Top 5 most frequent error messages
 
-Default colors for each log level (customizable in config):
+## Example Discord Message
 
-| Level | Color |
-|-------|-------|
-| Emergency | Red |
-| Alert | Orange-Red |
-| Critical | Orange |
-| Error | Dark Orange |
-| Warning | Yellow |
-| Notice | Cyan |
-| Info | Blue |
-| Debug | Gray |
+```
+📅 Daily Log Report - 2024-01-15
+
+Issues detected in the last 24 hours.
+
+Total Logs: 1,234
+❌ Error: 15
+⚠️ Warning: 47
+📝 Notice: 122
+ℹ️ Info: 1,050
+
+By Channel:
+  production: 1,234
+
+Top Recurring Errors:
+  • 5x: Database connection timeout
+  • 3x: Payment gateway unreachable
+  • 2x: Cache driver not available
+
+Generated by Laravel Discord Logger
+```
+
+## Testing
+
+```bash
+# Run tests
+composer test
+
+# Run with coverage
+composer test-coverage
+
+# Static analysis
+composer analyse
+
+# Code style check
+composer format-check
+
+# Auto-fix code style
+composer format
+```
+
+## Architecture
+
+This package follows **SOLID principles** and **Domain-Driven Design**:
+
+```
+src/
+├── Application/DailyReport/      # Use cases & DTOs
+│   ├── GatherLogStatisticsAction.php
+│   ├── BuildDailyReportAction.php
+│   └── SendDailyReportAction.php
+├── Domain/                        # Business logic & value objects
+│   ├── Config/
+│   └── ValueObjects/
+├── Infrastructure/                # External integrations
+│   └── Http/DiscordWebhookClient.php
+└── Console/Commands/              # Artisan commands
+```
+
+This makes the package:
+- ✅ Testable - Mock dependencies easily
+- ✅ Extensible - Implement custom transports
+- ✅ Maintainable - Clear separation of concerns
+
+## Changelog
+
+Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+
+## Upgrading
+
+Please see [UPGRADE](UPGRADE.md) for upgrade instructions.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Credits
+
+- [Haythem Bekir](https://github.com/haythembekir20)
+- Built with [Spatie Laravel Package Tools](https://github.com/spatie/laravel-package-tools)
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for more information.
+The MIT License (MIT). Please see [License File](LICENSE) for more information.

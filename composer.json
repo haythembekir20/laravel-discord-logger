@@ -14,12 +14,14 @@
         "php": "^8.1",
         "illuminate/support": "^10.0|^11.0|^12.0",
         "illuminate/http": "^10.0|^11.0|^12.0",
-        "illuminate/queue": "^10.0|^11.0|^12.0",
-        "illuminate/cache": "^10.0|^11.0|^12.0",
-        "monolog/monolog": "^3.0"
+        "spatie/laravel-package-tools": "^1.11"
     },
     "require-dev": {
+        "larastan/larastan": "^2.0|^3.0",
+        "laravel/pint": "^1.0",
         "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "pestphp/pest": "^2.0|^3.0",
+        "pestphp/pest-plugin-laravel": "^2.0|^3.0",
         "phpunit/phpunit": "^10.0|^11.0"
     },
     "autoload": {
@@ -35,9 +37,22 @@
     "extra": {
         "laravel": {
             "providers": [
-                "HaythemBekir\\DiscordLogger\\DiscordLoggerServiceProvider"
+                "HaythemBekir\\DiscordLogger\\Providers\\DiscordLoggerServiceProvider"
             ]
         }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "test-coverage": "pest --coverage",
+        "analyse": "phpstan analyse",
+        "format": "pint",
+        "format-check": "pint --test"
     },
     "minimum-stability": "stable",
     "prefer-stable": true

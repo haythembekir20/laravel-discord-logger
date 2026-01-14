@@ -1,0 +1,10 @@
+[2024-01-15 08:00:01] production.ERROR: Test error message 1 {"user_id":123}
+[2024-01-15 08:15:22] production.WARNING: Test warning message {"action":"login"}
+[2024-01-15 09:30:45] production.ERROR: Test error message 2 {"user_id":456}
+[2024-01-15 10:00:00] production.INFO: User logged in successfully {"user_id":789}
+[2024-01-15 11:22:33] production.ERROR: Test error message 1 {"user_id":321}
+[2024-01-15 12:00:00] production.CRITICAL: Database connection failed {"connection":"mysql"}
+[2024-01-15 13:45:00] production.DEBUG: Query executed {"query":"SELECT * FROM users"}
+[2024-01-15 14:30:00] production.NOTICE: Cache cleared {"driver":"redis"}
+[2024-01-15 15:00:00] production.ALERT: High memory usage detected {"memory":"95%"}
+[2024-01-15 16:00:00] production.EMERGENCY: System shutdown imminent {"reason":"disk full"}

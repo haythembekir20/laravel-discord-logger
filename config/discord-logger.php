@@ -7,41 +7,14 @@ return [
     | Discord Logger Configuration
     |--------------------------------------------------------------------------
     |
-    | This file contains the configuration for Discord webhook notifications.
-    | Real-time notifications and daily reports can be configured separately.
+    | This file contains the configuration for Discord daily log reports.
+    | Send comprehensive daily statistics to your Discord channel.
     |
     */
 
     /*
     |--------------------------------------------------------------------------
-    | Real-time Error Notifications
-    |--------------------------------------------------------------------------
-    |
-    | Send errors to Discord instantly as they happen.
-    | Each setting can be configured independently.
-    |
-    */
-
-    'realtime' => [
-        'enabled' => env('DISCORD_LOGGER_REALTIME_ENABLED', false),
-        'webhook_url' => env('DISCORD_LOGGER_REALTIME_WEBHOOK_URL'),
-
-        // Use queue for zero performance impact (recommended)
-        'async' => env('DISCORD_LOGGER_REALTIME_ASYNC', true),
-
-        // Log levels to notify: emergency, alert, critical, error, warning, notice, info, debug
-        'notify_levels' => explode(',', env('DISCORD_LOGGER_REALTIME_LEVELS', 'emergency,alert,critical,error')),
-
-        // Rate limiting to prevent flooding
-        'rate_limit' => [
-            'enabled' => env('DISCORD_LOGGER_RATE_LIMIT_ENABLED', true),
-            'max_per_minute' => env('DISCORD_LOGGER_RATE_LIMIT_MAX', 10),
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Daily Report (Cron)
+    | Daily Report
     |--------------------------------------------------------------------------
     |
     | Send daily log statistics report at a scheduled time.
@@ -63,7 +36,7 @@ return [
     | Message Appearance
     |--------------------------------------------------------------------------
     |
-    | Customize the appearance of Discord messages (shared by both).
+    | Customize the appearance of Discord messages.
     |
     */
 
