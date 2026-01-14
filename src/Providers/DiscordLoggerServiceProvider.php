@@ -10,6 +10,7 @@ use HaythemBekir\DiscordLogger\Application\DailyReport\SendDailyReportAction;
 use HaythemBekir\DiscordLogger\Console\Commands\SendDailyLogReportCommand;
 use HaythemBekir\DiscordLogger\Domain\Config\DiscordLoggerConfig;
 use HaythemBekir\DiscordLogger\Infrastructure\Http\DiscordWebhookClient;
+use HaythemBekir\DiscordLogger\Infrastructure\LogViewer\LogViewerDetector;
 use Illuminate\Contracts\Foundation\Application;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -27,6 +28,7 @@ final class DiscordLoggerServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         $this->registerConfig();
+        $this->registerLogViewerDetector();
         $this->registerWebhookClient();
         $this->registerActions();
     }
@@ -38,6 +40,11 @@ final class DiscordLoggerServiceProvider extends PackageServiceProvider
                 config('discord-logger', [])
             );
         });
+    }
+
+    private function registerLogViewerDetector(): void
+    {
+        $this->app->singleton(LogViewerDetector::class);
     }
 
     private function registerWebhookClient(): void

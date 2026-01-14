@@ -63,6 +63,7 @@ final class DiscordMessage
         array $byChannel,
         array $topErrors,
         AppearanceConfig $appearance,
+        ?array $errorLinks = null,
     ): self {
         $hasErrors = ($byLevel['error'] ?? 0) > 0
             || ($byLevel['critical'] ?? 0) > 0
@@ -102,8 +103,15 @@ final class DiscordMessage
         // Add top errors if available
         if (! empty($topErrors)) {
             $errorsText = '';
-            foreach (array_slice($topErrors, 0, 5) as $error) {
-                $errorsText .= "• {$error['count']}x: " . Str::limit($error['message'], 80) . "\n";
+            foreach (array_slice($topErrors, 0, 5) as $index => $error) {
+                $errorMessage = Str::limit($error['message'], 80);
+
+                // Add clickable link if available
+                if ($errorLinks !== null && isset($errorLinks[$index])) {
+                    $errorMessage = "[{$errorMessage}]({$errorLinks[$index]})";
+                }
+
+                $errorsText .= "• {$error['count']}x: {$errorMessage}\n";
             }
             $fields[] = [
                 'name' => 'Top Recurring Errors',

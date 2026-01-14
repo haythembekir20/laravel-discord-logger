@@ -76,4 +76,20 @@ return [
 
     'environment_label' => env('DISCORD_LOGGER_ENVIRONMENT_LABEL', env('APP_ENV', 'production')),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Log Viewer Integration
+    |--------------------------------------------------------------------------
+    |
+    | If you have a Laravel Log Viewer package installed (opcodesio/log-viewer
+    | or rap2hpoutre/laravel-log-viewer), error messages in Discord reports
+    | will include clickable links to view the full error details.
+    |
+    */
+
+    'log_viewer' => [
+        'enabled' => env('DISCORD_LOGGER_LOG_VIEWER_ENABLED', true),
+        'app_url' => env('DISCORD_LOGGER_APP_URL', env('APP_URL')),
+    ],
+
 ];
